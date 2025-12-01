@@ -176,7 +176,7 @@ Franka_code/
 ### MuJoCo model not found
 Make sure the Franka FR3 model path is correct in `dual_franka_scene.xml`:
 ```xml
-<compiler angle="radian" meshdir="/home/xyq/mujoco_sim/models/mujoco_menagerie/franka_fr3/assets"/>
+<compiler angle="radian" meshdir="/home/xyq/mujoco_sim/models/mujoco_menagerie/franka_fr3/assets"/> 修改成自己的模型路经
 ```
 
 ### ROS2 not found
