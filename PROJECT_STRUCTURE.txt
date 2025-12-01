@@ -1,0 +1,178 @@
+双臂Franka机器人MuJoCo仿真项目结构
+================================================================================
+
+项目路径: /home/xyq/Documents/pythoncode/Franka_code
+
+目录结构:
+.
+├── dual_franka_scene.xml          [核心文件] MuJoCo场景定义 (双臂Franka机器人)
+│                                  - 包含两个Franka FR3机器人
+│                                  - 位置: 左臂 (0, 0.5, 0.6), 右臂 (0, -0.5, 0.6)
+│                                  - 每个机械臂7个关节 + 执行器定义
+│
+├── mujoco_dual_franka_sim.py      [主程序] 带ROS2通信的完整仿真
+│                                  - ROS2节点: dual_franka_simulator
+│                                  - 发布关节状态 (100 Hz)
+│                                  - 接收关节命令
+│                                  - 集成MuJoCo可视化
+│
+├── demo_no_ros.py                 [快速演示] 独立演示程序 (无需ROS2)
+│                                  - 自动演示机器人运动
+│                                  - 包含挥手、协调运动等
+│                                  - 最快的测试方式
+│
+├── test_installation.py           [测试工具] 检查所有依赖是否安装
+│                                  - 测试MuJoCo, NumPy, ROS2
+│                                  - 显示版本信息
+│
+├── install_dependencies.sh        [安装脚本] 自动安装所有依赖
+│                                  - 安装MuJoCo, NumPy
+│                                  - 可选安装ROS2
+│
+├── run_simulation.sh              [启动脚本] 快速启动仿真
+│                                  - 自动加载ROS2环境
+│                                  - 运行仿真
+│
+├── README.md                      [详细文档] 完整的项目文档
+│                                  - 安装说明
+│                                  - 使用方法
+│                                  - API参考
+│                                  - 故障排除
+│
+├── QUICKSTART.md                  [快速指南] 中文快速开始指南
+│                                  - 快速安装
+│                                  - 运行示例
+│                                  - 常见问题
+│
+├── PROJECT_STRUCTURE.txt          [本文件] 项目结构说明
+│
+├── Franka_demo.py                 [原文件] 您的原始文件 (空)
+│
+└── dual_franka_ros2/              [ROS2包] 完整的ROS2功能包
+    ├── package.xml                - ROS2包元数据
+    ├── setup.py                   - Python包配置
+    ├── resource/
+    │   └── dual_franka_ros2       - ROS2资源标记文件
+    └── dual_franka_ros2/          - Python包源码
+        ├── __init__.py            - 包初始化
+        ├── mujoco_dual_franka_sim.py  - 仿真节点 (副本)
+        ├── test_controller.py     - 测试控制器节点
+        └── dual_franka_scene.xml  - 场景文件 (副本)
+
+================================================================================
+快速开始
+================================================================================
+
+1. 测试依赖安装:
+   $ python3 test_installation.py
+
+2. 运行独立演示 (推荐首次使用):
+   $ python3 demo_no_ros.py
+
+3. 运行完整仿真 (需要ROS2):
+   $ python3 mujoco_dual_franka_sim.py
+
+4. 构建ROS2包:
+   $ cd dual_franka_ros2
+   $ colcon build
+   $ source install/setup.bash
+   $ ros2 run dual_franka_ros2 dual_franka_sim
+
+================================================================================
+ROS2话题接口
+================================================================================
+
+发布 (仿真 -> 外部):
+  /left_arm/joint_states     (sensor_msgs/JointState)  - 左臂状态 @ 100Hz
+  /right_arm/joint_states    (sensor_msgs/JointState)  - 右臂状态 @ 100Hz
+
+订阅 (外部 -> 仿真):
+  /left_arm/joint_commands   (std_msgs/Float64MultiArray)  - 左臂位置命令
+  /right_arm/joint_commands  (std_msgs/Float64MultiArray)  - 右臂位置命令
+
+================================================================================
+机器人配置
+================================================================================
+
+左臂 (left_arm):
+  - 基座位置: [0, 0.5, 0.6] (世界坐标)
+  - 关节: left_joint1 ~ left_joint7
+  - 执行器: 位置控制, PD增益已调优
+  - 末端执行器点: left_ee_site
+
+右臂 (right_arm):
+  - 基座位置: [0, -0.5, 0.6] (世界坐标)
+  - 关节: right_joint1 ~ right_joint7
+  - 执行器: 位置控制, PD增益已调优
+  - 末端执行器点: right_ee_site
+
+Home位置 (两臂):
+  [0, 0, 0, -1.57079, 0, 1.57079, -0.7853]
+
+================================================================================
+文件用途总结
+================================================================================
+
+【核心仿真文件】
+  ✓ dual_franka_scene.xml        - 机器人模型定义
+  ✓ mujoco_dual_franka_sim.py    - 主仿真程序 + ROS2
+
+【快速测试】
+  ✓ demo_no_ros.py               - 无需ROS2的演示
+  ✓ test_installation.py         - 依赖检查
+
+【工具脚本】
+  ✓ install_dependencies.sh      - 安装依赖
+  ✓ run_simulation.sh            - 快速启动
+
+【文档】
+  ✓ README.md                    - 详细文档 (英文)
+  ✓ QUICKSTART.md                - 快速指南 (中文)
+  ✓ PROJECT_STRUCTURE.txt        - 本文件
+
+【ROS2包】
+  ✓ dual_franka_ros2/            - 完整ROS2功能包
+    ✓ test_controller.py         - 示例控制器
+
+================================================================================
+依赖项
+================================================================================
+
+必需:
+  ✓ Python 3.8+
+  ✓ MuJoCo 3.0+         (pip3 install mujoco)
+  ✓ NumPy               (pip3 install numpy)
+
+可选 (用于ROS2功能):
+  ○ ROS2 Humble或更新版本
+  ○ rclpy
+  ○ sensor_msgs
+  ○ std_msgs
+
+================================================================================
+模型文件路径
+================================================================================
+
+Franka FR3模型: /home/xyq/mujoco_sim/models/mujoco_menagerie/franka_fr3/
+  - fr3.xml                     - 单臂模型定义
+  - assets/                     - 网格文件 (.obj, .stl)
+    ├── link0_0.obj ~ link7_3.obj
+    └── link0.stl ~ link7.stl
+
+本项目场景文件通过meshdir引用上述assets目录。
+
+================================================================================
+下一步建议
+================================================================================
+
+1. 运行 demo_no_ros.py 查看效果
+2. 学习如何通过ROS2话题控制机器人
+3. 开发自定义控制算法
+4. 添加末端执行器 (夹爪)
+5. 实现双臂协作任务
+
+================================================================================
+更多信息请参考:
+  - README.md (详细文档)
+  - QUICKSTART.md (快速开始)
+================================================================================
