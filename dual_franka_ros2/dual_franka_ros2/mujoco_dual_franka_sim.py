@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""
-MuJoCo Dual Franka Robot Simulation with ROS2 Integration
-This script creates a dual-arm Franka robot simulation in MuJoCo and
-publishes joint states to ROS2 topics.
-"""
+
 
 import numpy as np
 import mujoco
@@ -21,7 +17,7 @@ class DualFrankaSimulator(Node):
     def __init__(self):
         super().__init__('dual_franka_simulator')
 
-        # Load MuJoCo model
+
         import os
         script_dir = os.path.dirname(os.path.abspath(__file__))
         model_path = os.path.join(script_dir, 'dual_franka_scene.xml')
@@ -37,7 +33,7 @@ class DualFrankaSimulator(Node):
             self.get_logger().error(f'Failed to load MuJoCo model: {e}')
             raise
 
-        # Joint names for both arms
+
         self.left_joint_names = [
             'left_joint1', 'left_joint2', 'left_joint3', 'left_joint4',
             'left_joint5', 'left_joint6', 'left_joint7'
@@ -47,21 +43,20 @@ class DualFrankaSimulator(Node):
             'right_joint5', 'right_joint6', 'right_joint7'
         ]
 
-        # Get joint IDs
+
         self.left_joint_ids = [self.model.joint(name).id for name in self.left_joint_names]
         self.right_joint_ids = [self.model.joint(name).id for name in self.right_joint_names]
 
-        # Get actuator IDs
+
         self.left_actuator_ids = [i for i in range(7)]
         self.right_actuator_ids = [i for i in range(7, 14)]
 
-        # ROS2 Publishers
         self.left_joint_state_pub = self.create_publisher(
             JointState, '/left_arm/joint_states', 10)
         self.right_joint_state_pub = self.create_publisher(
             JointState, '/right_arm/joint_states', 10)
 
-        # ROS2 Subscribers for joint commands
+
         self.left_joint_cmd_sub = self.create_subscription(
             Float64MultiArray, '/left_arm/joint_commands',
             self.left_joint_cmd_callback, 10)
@@ -69,18 +64,17 @@ class DualFrankaSimulator(Node):
             Float64MultiArray, '/right_arm/joint_commands',
             self.right_joint_cmd_callback, 10)
 
-        # Target joint positions (initialized to home position)
+
         self.left_target_pos = np.array([0, 0, 0, -1.57079, 0, 1.57079, -0.7853])
         self.right_target_pos = np.array([0, 0, 0, -1.57079, 0, 1.57079, -0.7853])
 
-        # Set initial position to home
+
         self.data.qpos[:7] = self.left_target_pos
         self.data.qpos[7:14] = self.right_target_pos
 
-        # Timer for publishing joint states
+
         self.timer = self.create_timer(0.01, self.publish_joint_states)  # 100 Hz
 
-        # Simulation control
         self.running = True
         self.sim_thread = None
 
@@ -108,7 +102,7 @@ class DualFrankaSimulator(Node):
         """Publish current joint states for both arms"""
         current_time = self.get_clock().now().to_msg()
 
-        # Publish left arm state
+      
         left_msg = JointState()
         left_msg.header.stamp = current_time
         left_msg.header.frame_id = 'left_base'
@@ -117,7 +111,7 @@ class DualFrankaSimulator(Node):
         left_msg.velocity = self.data.qvel[:7].tolist()
         self.left_joint_state_pub.publish(left_msg)
 
-        # Publish right arm state
+      
         right_msg = JointState()
         right_msg.header.stamp = current_time
         right_msg.header.frame_id = 'right_base'
@@ -127,20 +121,18 @@ class DualFrankaSimulator(Node):
         self.right_joint_state_pub.publish(right_msg)
 
     def simulation_step(self):
-        """Perform one simulation step"""
-        # Set control inputs (position targets)
+        
         self.data.ctrl[:7] = self.left_target_pos
         self.data.ctrl[7:14] = self.right_target_pos
 
-        # Step the simulation
+        
         mujoco.mj_step(self.model, self.data)
 
     def run_simulation_with_viewer(self):
-        """Run simulation with MuJoCo viewer"""
-        self.get_logger().info('Starting MuJoCo viewer...')
+        
 
         with mujoco.viewer.launch_passive(self.model, self.data) as viewer:
-            # Set camera to get a good view of both arms
+            
             viewer.cam.azimuth = 90
             viewer.cam.elevation = -20
             viewer.cam.distance = 3.0
@@ -149,13 +141,13 @@ class DualFrankaSimulator(Node):
             while self.running and viewer.is_running():
                 step_start = time.time()
 
-                # Simulation step
+                
                 self.simulation_step()
 
-                # Sync viewer
+                
                 viewer.sync()
 
-                # Maintain real-time execution
+               
                 time_until_next_step = self.model.opt.timestep - (time.time() - step_start)
                 if time_until_next_step > 0:
                     time.sleep(time_until_next_step)
@@ -163,22 +155,22 @@ class DualFrankaSimulator(Node):
         self.get_logger().info('MuJoCo viewer closed')
 
     def run_simulation_headless(self):
-        """Run simulation without viewer (headless mode)"""
+        
         self.get_logger().info('Running in headless mode...')
 
         while self.running:
             step_start = time.time()
 
-            # Simulation step
+            
             self.simulation_step()
 
-            # Maintain real-time execution
+            
             time_until_next_step = self.model.opt.timestep - (time.time() - step_start)
             if time_until_next_step > 0:
                 time.sleep(time_until_next_step)
 
     def start_simulation(self, use_viewer=True):
-        """Start the simulation in a separate thread"""
+        
         if use_viewer:
             self.sim_thread = threading.Thread(target=self.run_simulation_with_viewer)
         else:
@@ -188,7 +180,7 @@ class DualFrankaSimulator(Node):
         self.get_logger().info('Simulation thread started')
 
     def stop_simulation(self):
-        """Stop the simulation"""
+        
         self.running = False
         if self.sim_thread:
             self.sim_thread.join()
@@ -200,17 +192,17 @@ def main(args=None):
     print("Dual Franka Robot Simulator with ROS2")
     print("=" * 60)
 
-    # Initialize ROS2
+    # 初始化 ROS2
     rclpy.init(args=args)
 
     try:
-        # Create simulator node
+        # 创建节点
         simulator = DualFrankaSimulator()
 
-        # Start simulation with viewer
+        # 启动模拟器（带可视化界面）
         simulator.start_simulation(use_viewer=True)
 
-        # Spin ROS2 node
+        
         print("\nSimulation running. Press Ctrl+C to exit.")
         print("\nROS2 Topics:")
         print("  Publishers:")

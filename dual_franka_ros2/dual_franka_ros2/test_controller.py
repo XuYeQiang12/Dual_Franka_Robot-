@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
-"""
-Test controller for dual Franka arms
-Demonstrates how to send joint commands to both arms
-"""
+
 
 import rclpy
 from rclpy.node import Node
@@ -15,13 +12,13 @@ class TestController(Node):
     def __init__(self):
         super().__init__('test_controller')
 
-        # Publishers for joint commands
+        
         self.left_cmd_pub = self.create_publisher(
             Float64MultiArray, '/left_arm/joint_commands', 10)
         self.right_cmd_pub = self.create_publisher(
             Float64MultiArray, '/right_arm/joint_commands', 10)
 
-        # Wait for publishers to be ready
+        
         time.sleep(1.0)
 
         self.get_logger().info('Test Controller initialized')
@@ -52,12 +49,12 @@ class TestController(Node):
             t = time.time() - start_time
             angle = np.sin(2 * np.pi * frequency * t) * 0.5
 
-            # Left arm waves
+            
             left_pos = [angle, 0.3, 0.0, -1.2, 0.0, 1.5, angle]
             left_msg = Float64MultiArray()
             left_msg.data = left_pos
 
-            # Right arm waves (opposite phase)
+            
             right_pos = [-angle, -0.3, 0.0, -1.2, 0.0, 1.5, -angle]
             right_msg = Float64MultiArray()
             right_msg.data = right_pos
@@ -68,7 +65,7 @@ class TestController(Node):
             rate.sleep()
 
     def send_coordinated_motion(self, duration=5.0):
-        """Send coordinated motion where arms move together"""
+        
         self.get_logger().info(f'Performing coordinated motion for {duration}s...')
 
         start_time = time.time()
@@ -78,7 +75,7 @@ class TestController(Node):
             t = time.time() - start_time
             phase = (t / duration) * 2 * np.pi
 
-            # Both arms move in coordination
+            
             q1 = np.sin(phase) * 0.5
             q2 = np.cos(phase) * 0.3
 
@@ -97,22 +94,22 @@ class TestController(Node):
             rate.sleep()
 
     def run_demo(self):
-        """Run a demonstration sequence"""
+        
         self.get_logger().info('Starting demonstration sequence...')
 
-        # 1. Move to home
+       
         self.send_home_position()
         time.sleep(2.0)
 
-        # 2. Wave motion
+        
         self.send_wave_motion(duration=5.0, frequency=0.5)
         time.sleep(1.0)
 
-        # 3. Coordinated motion
+        
         self.send_coordinated_motion(duration=5.0)
         time.sleep(1.0)
 
-        # 4. Return to home
+        
         self.send_home_position()
         time.sleep(2.0)
 
