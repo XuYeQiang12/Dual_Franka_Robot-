@@ -2,6 +2,7 @@
 
 This project provides a complete dual-arm Franka FR3 robot simulation using MuJoCo with ROS2 integration for communication and control.
 <img width="2496" height="1389" alt="image" src="https://github.com/user-attachments/assets/e9c27099-630a-464f-b7d8-1112b2eabb62" />
+
 https://github.com/user-attachments/assets/fdfc526b-a59c-4c90-aff2-d97210c992aa
 
 
